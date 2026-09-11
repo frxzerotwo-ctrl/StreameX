@@ -489,47 +489,56 @@
 </script>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js"; // You already had this import!
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+    import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCvJxtMLl-M21Kpi5JkcpioLGI9RMwD3R0",
-            authDomain: "streamex-v1.firebaseapp.com",
-            projectId: "streamex-v1",
-            storageBucket: "streamex-v1.firebasestorage.app",
-            messagingSenderId: "87040295346",
-            appId: "1:87040295346:web:4369ebb00242756e5f24ab",
-            measurementId: "G-3854NTCXSW" // <-- 1. ADDED YOUR MEASUREMENT ID HERE
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyCvJxtMLl-M21Kpi5JkcpioLGI9RMwD3R0",
+        authDomain: "streamex-v1.firebaseapp.com",
+        projectId: "streamex-v1",
+        storageBucket: "streamex-v1.firebasestorage.app",
+        messagingSenderId: "87040295346",
+        appId: "1:87040295346:web:4369ebb00242756e5f24ab",
+        measurementId: "G-3854NTCXSW"
+    };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const messaging = getMessaging(app);
-        const analytics = getAnalytics(app); // <-- 2. INITIALIZED ANALYTICS HERE
+    // 1. Initialize Core App
+    const app = initializeApp(firebaseConfig);
+    const messaging = getMessaging(app);
 
-        // Ask for permission when a user clicks a button
-        window.enableNotifications = () => {
-            Notification.requestPermission().then((permission) => {
-                if (permission === 'granted') {
-                    console.log('Permission granted!');
+    // 2. Initialize Analytics safely after confirming browser support
+    let analytics = null;
+    isSupported().then((supported) => {
+        if (supported) {
+            analytics = getAnalytics(app);
+            console.log("Firebase Analytics initialized successfully");
+        } else {
+            console.warn("Analytics not supported (IndexedDB/cookies disabled or running in restricted WebView/iframe)");
+        }
+    }).catch((err) => {
+        console.error("Analytics initialization failed:", err);
+    });
 
-                    // Pass your existing service worker registration to Firebase
-                    navigator.serviceWorker.ready.then((registration) => {
-                        getToken(messaging, {
-                            vapidKey: 'BOe9LMQ44UN1YUe_cd-lN1bz5rEfXceWWYEVKnzgjL7PD3mqOpXRMAn8H6WHkY1tpScfhFIcapNX7QXhaeuQWaA',
-                            serviceWorkerRegistration: registration
-                        }).then((currentToken) => {
-                            if (currentToken) {
-                                console.log('Your Device Token:', currentToken);
-                                // Save this token to your database later!
-                            }
-                        });
+    // 3. Notification handler
+    window.enableNotifications = () => {
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+                console.log('Permission granted!');
+                navigator.serviceWorker.ready.then((registration) => {
+                    getToken(messaging, {
+                        vapidKey: 'BOe9LMQ44UN1YUe_cd-lN1bz5rEfXceWWYEVKnzgjL7PD3mqOpXRMAn8H6WHkY1tpScfhFIcapNX7QXhaeuQWaA',
+                        serviceWorkerRegistration: registration
+                    }).then((currentToken) => {
+                        if (currentToken) {
+                            console.log('Your Device Token:', currentToken);
+                        }
                     });
-                }
-            });
-        };
-    </script>
+                });
+            }
+        });
+    };
+</script>
 
     <script src="script.js" type="module"></script>
     <div id="connection-status" class="connection-toast"></div>
