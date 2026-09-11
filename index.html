@@ -523,71 +523,33 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
-        import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCvJxtMLl-M21Kpi5JkcpioLGI9RMwD3R0",
-            authDomain: "streamex-v1.firebaseapp.com",
-            projectId: "streamex-v1",
-            storageBucket: "streamex-v1.firebasestorage.app",
-            messagingSenderId: "87040295346",
-            appId: "1:87040295346:web:4369ebb00242756e5f24ab",
-            measurementId: "G-3854NTCXSW"
-        };
+    const firebaseConfig = {
+        apiKey: "AIzaSyCvJxtMLl-M21Kpi5JkcpioLGI9RMwD3R0",
+        authDomain: "streamex-v1.firebaseapp.com",
+        projectId: "streamex-v1",
+        storageBucket: "streamex-v1.firebasestorage.app",
+        messagingSenderId: "87040295346",
+        appId: "1:87040295346:web:4369ebb00242756e5f24ab",
+        measurementId: "G-3854NTCXSW"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const messaging = getMessaging(app);
+    const app = initializeApp(firebaseConfig);
 
-        let analytics = null;
-        isSupported().then((supported) => {
-            if (supported) {
-                analytics = getAnalytics(app);
-                console.log("Firebase Analytics initialized successfully");
-            } else {
-                console.warn("Analytics not supported (IndexedDB/cookies disabled or running in restricted WebView/iframe)");
-            }
-        }).catch((err) => {
-            console.error("Analytics initialization failed:", err);
-        });
-
-        window.enableNotifications = () => {
-            Notification.requestPermission().then((permission) => {
-                if (permission === 'granted') {
-                    console.log('Permission granted!');
-                    navigator.serviceWorker.ready.then((registration) => {
-                        getToken(messaging, {
-                            vapidKey: 'BOe9LMQ44UN1YUe_cd-lN1bz5rEfXceWWYEVKnzgjL7PD3mqOpXRMAn8H6WHkY1tpScfhFIcapNX7QXhaeuQWaA',
-                            serviceWorkerRegistration: registration
-                        }).then((currentToken) => {
-                            if (currentToken) {
-                                console.log('Your Device Token:', currentToken);
-                            }
-                        });
-                    });
-                }
-            });
-        };
-    </script>
+    isSupported().then((supported) => {
+        if (supported) {
+            getAnalytics(app);
+        }
+    }).catch((err) => {
+        console.error("Analytics error:", err);
+    });
+</script>
 
     <script src="script.js" type="module"></script>
     <div id="connection-status" class="connection-toast"></div>
     
-    <!-- Push Notification Prompt Modal -->
-    <div id="notification-modal" class="notification-overlay hidden">
-        <div class="notification-box">
-            <div class="notification-icon">
-                <i class="fa-solid fa-bell"></i>
-            </div>
-            <h3>Never Miss a Premiere</h3>
-            <p>Get instant alerts when we drop new HD movies and TV shows on StreameX.</p>
-            <div class="notification-actions">
-                <button id="btn-later" class="btn-secondary">Maybe Later</button>
-                <button id="btn-enable" class="btn-primary">Allow Notifications</button>
-            </div>
-        </div>
-    </div>
 </body>
 
 </html>
