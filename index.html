@@ -2,27 +2,65 @@
 <html lang="en">
 
 <head>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="google-site-verification" content="E58HshX__LEhPIUm9GKCaedC_SIOk6wwgOZm4j15_0g" />
     <meta charset="UTF-8">
-    <link rel="dns-prefetch" href="https://wsrv.nl">
-    <link rel="preconnect" href="https://streamex-proxy.snahasishdey141.workers.dev">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="canonical" href="https://streamex.pages.dev/">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="google-site-verification" content="E58HshX__LEhPIUm9GKCaedC_SIOk6wwgOZm4j15_0g">
 
     <title>StreameX - Watch Movies & TV Shows Free</title>
-    <meta name="description"
-        content="Stream thousands of movies and TV shows in HD for free. No ads, no registration required. StreameX is your ultimate entertainment hub.">
-    <meta name="keywords" content="free movies, streaming, watch online, hd movies, tv series, anime, streamex">
-    <meta name="robots" content="index, follow">
+    <meta name="description" content="Stream thousands of movies and TV shows in HD for free. No ads, no registration required. StreameX is your ultimate entertainment hub.">
+    <meta name="keywords" content="streamex, stream ex, free movies, streaming, watch online, hd movies, tv series, anime">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <meta name="referrer" content="origin">
 
-    <meta property="og:site_name" content="StreameX">
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
+    <meta property="og:site_name" content="StreameX">
     <meta property="og:url" content="https://streamex.pages.dev/">
-    <meta property="og:title" content="StreameX - Free HD Streaming">
-    <meta property="og:description" content="Watch your favorite movies and shows for free on StreameX.">
-    <meta property="og:image" content="https://streamex.pages.dev/assets/logo.png">
-    <meta name="referrer" content="origin" />
+    <meta property="og:title" content="StreameX - Watch Movies & TV Shows Free">
+    <meta property="og:description" content="Stream thousands of movies and TV shows in HD for free. No ads, no registration required. StreameX is your ultimate entertainment hub.">
+    <meta property="og:image" content="https://streamex.pages.dev/assets/icon-512.png">
 
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="StreameX - Watch Movies & TV Shows Free">
+    <meta name="twitter:description" content="Stream thousands of movies and TV shows in HD for free. No ads, no registration required.">
+    <meta name="twitter:image" content="https://streamex.pages.dev/assets/icon-512.png">
+
+    <!-- Unified Structured Data (Schema.org) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://streamex.pages.dev/#website",
+          "url": "https://streamex.pages.dev/",
+          "name": "StreameX",
+          "alternateName": ["StreameX App", "Streame X", "streamex"],
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://streamex.pages.dev/?s={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://streamex.pages.dev/#webapp",
+          "name": "StreameX",
+          "url": "https://streamex.pages.dev/",
+          "applicationCategory": "EntertainmentApplication",
+          "operatingSystem": "All",
+          "browserRequirements": "Requires JavaScript. Requires HTML5."
+        }
+      ]
+    }
+    </script>
+
+    <!-- Preconnect & DNS-Prefetch -->
+    <link rel="dns-prefetch" href="https://wsrv.nl">
+    <link rel="preconnect" href="https://streamex-proxy.snahasishdey141.workers.dev">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
@@ -54,7 +92,7 @@
         </div>
 
         <div class="logo">
-            <img src="assets/icon-192.png" alt="StreameX" class="brand-logo"> <span class="nav-text">StreameX</span>
+            <img src="assets/icon-192.png" alt="StreameX Logo" width="192" height="192" class="brand-logo"> <span class="nav-text">StreameX</span>
         </div>
 
         <div class="nav-group">
@@ -98,7 +136,7 @@
     <main class="main-content">
 
         <div id="mobile-download-btn">
-            <a href="download.html" target="_blank" rel="noopener noreferrer">
+            <a href="download.html" target="_blank" rel="noopener noreferrer" aria-label="Download StreameX App">
                 <i class="fas fa-download"></i>
             </a>
         </div>
@@ -106,15 +144,19 @@
         <div class="search-container">
             <i class="fas fa-search search-icon"></i>
             <input type="text" class="search-input" placeholder="Search for content..."
+                aria-label="Search content"
                 onkeyup="handleSmartSearch(this.value)">
         </div>
 
         <div id="view-search" class="page-view">
-            <h1 id="search-title">Search Results</h1>
+            <h2 id="search-title">Search Results</h2>
             <div class="media-grid" id="search-res"></div>
         </div>
 
         <div id="view-home" class="page-view active">
+            <!-- Screen-reader and search-engine accessible H1 for brand authority -->
+            <h1 class="sr-only" style="position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0;">StreameX - Watch Free HD Movies, TV Shows & Anime Online</h1>
+            
             <div class="slider-container" id="hero-slider"></div>
 
             <div id="continue-watching-section" style="display:none;">
@@ -144,6 +186,7 @@
             <div class="search-container mobile-search-bar" style="margin-top: 20px;">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" class="search-input" id="mobile-search-input" placeholder="Search movies..."
+                    aria-label="Mobile Search"
                     onkeyup="handleSmartSearch(this.value)">
             </div>
             <div id="mobile-search-results" class="media-grid"
@@ -151,7 +194,7 @@
         </div>
 
         <div id="view-movies" class="page-view">
-            <h1>Movies</h1>
+            <h2>Movies</h2>
             <div class="section-header">
                 <div class="section-title">Popular Movies</div>
             </div>
@@ -167,7 +210,7 @@
         </div>
 
         <div id="view-tv" class="page-view">
-            <h1>TV Shows</h1>
+            <h2>TV Shows</h2>
             <div class="section-header">
                 <div class="section-title">On The Air</div>
             </div>
@@ -179,7 +222,7 @@
         </div>
 
         <div id="view-anime" class="page-view">
-            <h1>Anime World</h1>
+            <h2>Anime World</h2>
             <div class="section-header">
                 <div class="section-title">Trending Anime</div>
             </div>
@@ -191,17 +234,17 @@
         </div>
 
         <div id="view-watchlist" class="page-view">
-            <h1>My Watchlist</h1>
+            <h2>My Watchlist</h2>
             <div class="media-grid" id="watchlist-grid" style="margin-top: 20px;"></div>
         </div>
 
         <div id="view-history" class="page-view">
-            <h1>Watch History</h1>
+            <h2>Watch History</h2>
             <div class="media-grid" id="history-grid" style="margin-top: 20px;"></div>
         </div>
 
         <div id="view-settings" class="page-view">
-            <h1>Settings</h1>
+            <h2>Settings</h2>
             <br>
             <div class="settings-card">
 
@@ -263,7 +306,7 @@
             <div class="legal-header" style="text-align: center; padding: 50px 20px;">
                 <i class="fas fa-shield-alt"
                     style="font-size: 60px; color: #ff9800; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(255, 152, 0, 0.4));"></i>
-                <h1 style="color: #ff9800;">Get an Ad-Free Experience</h1>
+                <h2 style="color: #ff9800;">Get an Ad-Free Experience</h2>
                 <p style="margin: 0 auto; max-width: 600px; font-size: 16px;">
                     Streaming servers rely on popup ads to cover their server costs. Because StreameX does not host the
                     videos directly, we cannot disable these external ads for you.
@@ -303,7 +346,7 @@
 
         <div id="view-legal" class="page-view">
             <div class="legal-header">
-                <h1>Legal Information</h1>
+                <h2>Legal Information</h2>
                 <p>StreameX operates as a content discovery platform. Please review the information below to understand
                     how we operate and our policies regarding content.</p>
             </div>
@@ -479,69 +522,58 @@
         </div>
     </div>
 
-    <script type="application/ld+json">
- {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "StreameX",
-  "url": "https://streamex.pages.dev/"
- }
-</script>
-
     <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
-    import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+        import { getAnalytics, isSupported } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCvJxtMLl-M21Kpi5JkcpioLGI9RMwD3R0",
-        authDomain: "streamex-v1.firebaseapp.com",
-        projectId: "streamex-v1",
-        storageBucket: "streamex-v1.firebasestorage.app",
-        messagingSenderId: "87040295346",
-        appId: "1:87040295346:web:4369ebb00242756e5f24ab",
-        measurementId: "G-3854NTCXSW"
-    };
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvJxtMLl-M21Kpi5JkcpioLGI9RMwD3R0",
+            authDomain: "streamex-v1.firebaseapp.com",
+            projectId: "streamex-v1",
+            storageBucket: "streamex-v1.firebasestorage.app",
+            messagingSenderId: "87040295346",
+            appId: "1:87040295346:web:4369ebb00242756e5f24ab",
+            measurementId: "G-3854NTCXSW"
+        };
 
-    // 1. Initialize Core App
-    const app = initializeApp(firebaseConfig);
-    const messaging = getMessaging(app);
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
 
-    // 2. Initialize Analytics safely after confirming browser support
-    let analytics = null;
-    isSupported().then((supported) => {
-        if (supported) {
-            analytics = getAnalytics(app);
-            console.log("Firebase Analytics initialized successfully");
-        } else {
-            console.warn("Analytics not supported (IndexedDB/cookies disabled or running in restricted WebView/iframe)");
-        }
-    }).catch((err) => {
-        console.error("Analytics initialization failed:", err);
-    });
-
-    // 3. Notification handler
-    window.enableNotifications = () => {
-        Notification.requestPermission().then((permission) => {
-            if (permission === 'granted') {
-                console.log('Permission granted!');
-                navigator.serviceWorker.ready.then((registration) => {
-                    getToken(messaging, {
-                        vapidKey: 'BOe9LMQ44UN1YUe_cd-lN1bz5rEfXceWWYEVKnzgjL7PD3mqOpXRMAn8H6WHkY1tpScfhFIcapNX7QXhaeuQWaA',
-                        serviceWorkerRegistration: registration
-                    }).then((currentToken) => {
-                        if (currentToken) {
-                            console.log('Your Device Token:', currentToken);
-                        }
-                    });
-                });
+        let analytics = null;
+        isSupported().then((supported) => {
+            if (supported) {
+                analytics = getAnalytics(app);
+                console.log("Firebase Analytics initialized successfully");
+            } else {
+                console.warn("Analytics not supported (IndexedDB/cookies disabled or running in restricted WebView/iframe)");
             }
+        }).catch((err) => {
+            console.error("Analytics initialization failed:", err);
         });
-    };
-</script>
+
+        window.enableNotifications = () => {
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    console.log('Permission granted!');
+                    navigator.serviceWorker.ready.then((registration) => {
+                        getToken(messaging, {
+                            vapidKey: 'BOe9LMQ44UN1YUe_cd-lN1bz5rEfXceWWYEVKnzgjL7PD3mqOpXRMAn8H6WHkY1tpScfhFIcapNX7QXhaeuQWaA',
+                            serviceWorkerRegistration: registration
+                        }).then((currentToken) => {
+                            if (currentToken) {
+                                console.log('Your Device Token:', currentToken);
+                            }
+                        });
+                    });
+                }
+            });
+        };
+    </script>
 
     <script src="script.js" type="module"></script>
     <div id="connection-status" class="connection-toast"></div>
+    
     <!-- Push Notification Prompt Modal -->
     <div id="notification-modal" class="notification-overlay hidden">
         <div class="notification-box">
@@ -557,6 +589,5 @@
         </div>
     </div>
 </body>
-
 
 </html>
