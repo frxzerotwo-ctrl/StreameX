@@ -1328,47 +1328,6 @@ window.addEventListener('online', () => {
     showConnectionStatus('Back online! Ready to stream new movies.', true);
 });
 
-// Notification Modal Logic
-document.addEventListener("DOMContentLoaded", () => {
-    const modal = document.getElementById('notification-modal');
-    const btnLater = document.getElementById('btn-later');
-    const btnEnable = document.getElementById('btn-enable');
-
-    // 1. Check local storage to see if we've already prompted them
-    const hasPrompted = localStorage.getItem('streamex_notif_prompted');
-
-    // 2. Only show if supported, permission is default, AND we haven't asked yet
-    if (!hasPrompted && 'Notification' in window && Notification.permission === 'default') {
-        // Wait 3 seconds so we don't interrupt the user immediately
-        setTimeout(() => {
-            if (modal) modal.classList.remove('hidden');
-        }, 3000);
-    }
-
-    // Handle "Maybe Later" click
-    if (btnLater) {
-        btnLater.addEventListener('click', () => {
-            modal.classList.add('hidden');
-            // Save their choice so it doesn't pop up again on next visit
-            localStorage.setItem('streamex_notif_prompted', 'true');
-        });
-    }
-
-    // Handle "Allow Notifications" click
-    if (btnEnable) {
-        btnEnable.addEventListener('click', () => {
-            modal.classList.add('hidden');
-            // Save their choice so it doesn't pop up again on next visit
-            localStorage.setItem('streamex_notif_prompted', 'true');
-
-            // Call the Firebase function we set up in index.html
-            if (typeof window.enableNotifications === 'function') {
-                window.enableNotifications();
-            }
-        });
-    }
-});
-
 // --- EXPOSE TO HTML ---
 window.router = router;
 window.openPlayer = openPlayer;
