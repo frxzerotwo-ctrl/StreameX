@@ -40,9 +40,11 @@ const servers = [
     { name: "VidLink (Sub)", isAnime: true, key: "vidlink_anime_sub", useSandbox: false },
     { name: "VidLink (Dub)", isAnime: true, key: "vidlink_anime_dub", useSandbox: false },
     { name: "Megaplay", isAnime: true, key: "megaplay_anime_sub", useSandbox: false },
+    { name: "Zoryva", isAnime: true, key: "zoryva_anime", useSandbox: false },
 
     // --- MOVIE/TV SERVERS (Use TMDB ID) ---
     { name: "StreameX", key: "streamex", useSandbox: false },
+    { name: "StreameX 2", key: "vidstuck", useSandbox: false },
     { name: "Server1", key: "fastserver", useSandbox: false },
     { name: "Server2", key: "multiserver", useSandbox: true },
     { name: "VidSrc", key: "vidsrc", useSandbox: false },
