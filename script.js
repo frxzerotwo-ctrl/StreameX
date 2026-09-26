@@ -28,50 +28,25 @@ async function prefetchEndpoint(endpoint) {
 const activeScrollHandlers = {};
 
 
-// --- SERVERS (UPDATED FOR WORKER) ---
+// --- SERVERS (FIXED - DIRECT + ARABIC SUPPORT) ---
 const servers = [
-    // --- ANIME SERVERS (Require Anilist ID) ---
-    { name: "StreameX Anime", isAnime: true, key: "Streamrip", useSandbox: false },
-    { name: "FilmU", isAnime: true, key: "FilmU", useSandbox: false },
-    { name: "VidNest (Sub)", isAnime: true, key: "vidnest_anime_sub", useSandbox: false },
-    { name: "VidNest (Dub)", isAnime: true, key: "vidnest_anime_dub", useSandbox: false },
-    { name: "Anime (Sub)", isAnime: true, key: "animepahe_sub", useSandbox: false },
-    { name: "Anime (Dub)", isAnime: true, key: "animepahe_dub", useSandbox: false },
-    { name: "VidLink (Sub)", isAnime: true, key: "vidlink_anime_sub", useSandbox: false },
-    { name: "VidLink (Dub)", isAnime: true, key: "vidlink_anime_dub", useSandbox: false },
-    { name: "Megaplay", isAnime: true, key: "megaplay_anime_sub", useSandbox: false },
-    { name: "Zoryva", isAnime: true, key: "zoryva_anime", useSandbox: false },
+    // --- MOVIE/TV - مباشر بترجمة عربية (CC -> Arabic) ---
+    { name: "عربي - VidSrc", key: "vidsrc_ar", embed: "https://vidsrc.to/embed/movie/{id}", useSandbox: false },
+    { name: "عربي - VidLink", key: "vidlink", embed: "https://vidlink.pro/movie/{id}", useSandbox: false },
+    { name: "عربي - AutoEmbed", key: "auto", embed: "https://autoembed.co/movie/tmdb/{id}", useSandbox: false },
+    { name: "VidSrc 2", key: "vidsrc2", embed: "https://vidsrc.xyz/embed/movie?tmdb={id}", useSandbox: false },
+    { name: "2Embed", key: "2embed", embed: "https://www.2embed.cc/embed/{id}", useSandbox: false },
+    { name: "SuperEmbed", key: "super", embed: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1", useSandbox: false },
+    { name: "Smashy", key: "smashy", embed: "https://player.smashy.stream/movie/{id}", useSandbox: false },
 
-    // --- MOVIE/TV SERVERS (Use TMDB ID) ---
-    { name: "StreameX", key: "streamex", useSandbox: false },
-    { name: "StreameX 2", key: "vidstuck", useSandbox: false },
-    { name: "Server1", key: "fastserver", useSandbox: false },
-    { name: "Server2", key: "multiserver", useSandbox: true },
-    { name: "VidSrc", key: "vidsrc", useSandbox: false },
-    { name: "Server4", key: "server5", useSandbox: false },       // Maps to PrimeSrc in worker
-    { name: "Vidpro", key: "vidpro", useSandbox: false },        // Maps to VidKing in worker
-    { name: "Stream", key: "cstream", useSandbox: false },
-    { name: "king", key: "vidking_direct", useSandbox: false }, // Maps to VidRock in worker
-    { name: "pro", key: "vidlink_standard", useSandbox: false },
-    { name: "New", key: "Nhd", useSandbox: false },
-    { name: "Modern", key: "modern", useSandbox: false },
-    { name: "Scape", key: "screenscape", useSandbox: false },
-    { name: "Modiplay", key: "modiplay", useSandbox: false },
-    { name: "Smart", key: "smart", useSandbox: false },
-    { name: "nest", key: "vidnest_standard", useSandbox: false },
-    { name: "letest", key: "nontongo", useSandbox: false },
-    { name: "Api1", key: "Multi_server", useSandbox: false },
-    { name: "Multilang", key: "Multi_lang", useSandbox: false },
-    { name: "Premium", key: "Premium", useSandbox: false },
-    { name: "MovieApi", key: "MoviesApi", useSandbox: false },
-    { name: "EmbedApi", key: "EmbedApi", useSandbox: false },
-    { name: "Vidapi", key: "Vidapi", useSandbox: false },
-    { name: "NextGen", key: "NextGen", useSandbox: false },
-    { name: "Streamrip", key: "Streamrip_Movie", useSandbox: false },
-    { name: "FilmU", key: "FilmU_Movie", useSandbox: false },
-    { name: "Vidcore", key: "vidcore", useSandbox: false },
-    { name: "Vipembed", key: "2embed", useSandbox: false },
+    // TV
+    { name: "عربي TV - VidSrc", key: "vidsrc_tv", embed: "https://vidsrc.to/embed/tv/{id}/{season}/{episode}", useSandbox: false },
+    { name: "عربي TV - VidLink", key: "vidlink_tv", embed: "https://vidlink.pro/tv/{id}/{season}/{episode}", useSandbox: false },
+    { name: "TV - 2Embed", key: "2embed_tv", embed: "https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}", useSandbox: false },
 
+    // ANIME - مباشر (Anilist ID)
+    { name: "Anime - VidLink Sub", isAnime: true, key: "vidlink_anime_sub", embed: "https://vidlink.pro/anime/{id}/{season}/{episode}/sub", useSandbox: false },
+    { name: "Anime - VidLink Dub", isAnime: true, key: "vidlink_anime_dub", embed: "https://vidlink.pro/anime/{id}/{season}/{episode}/dub", useSandbox: false },
 ];
 
 // --- NEW HELPER: FETCH ANILIST ID ---
@@ -1290,16 +1265,9 @@ function toggleSidebar() {
     }
 }
 
+// ServiceWorker removed to prevent cached No content errors
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                console.log('ServiceWorker registration successful with scope: ', registration.scope);
-            })
-            .catch(err => {
-                console.log('ServiceWorker registration failed: ', err);
-            });
-    });
+    navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
 }
 
 // Online/Offline Detection Logic
