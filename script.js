@@ -628,7 +628,17 @@ async function openPlayer(id, type, skipPush = false) {
             else preferredServer = servers.findIndex(s => s.isAnime);
 
             // Absolute fallback
-            if (preferredServer === -1) preferredServer = 0;
+            if (preferredServer === -1) {
+        // خلي Playmogo TV هو الافتراضي للمسلسلات
+        if (type === 'tv') {
+            const playmogoIdx = servers.findIndex(s => s.name.includes('Playmogo TV') || s.name === 'Playmogo TV');
+            preferredServer = playmogoIdx !== -1 ? playmogoIdx : 0;
+        } else {
+            // للأفلام خلي 1vid هو الافتراضي
+            const vid1Idx = servers.findIndex(s => s.name.includes('1vid'));
+            preferredServer = vid1Idx !== -1 ? vid1Idx : 0;
+        }
+    }
         }
     }
 
