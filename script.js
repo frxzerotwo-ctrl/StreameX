@@ -28,33 +28,39 @@ async function prefetchEndpoint(endpoint) {
 const activeScrollHandlers = {};
 
 
-// --- SERVERS (FIXED - CLEAN + ARABIC SPLIT) ---
-const playbackServers = [ // نظيفة بدون sandbox - مش هتقول Please Disable Sandbox
-    { name: "VidFast (نظيف)", embed: "https://vidfast.pro/movie/{id}", useSandbox: false, adLevel: "low" },
-    { name: "VidLink (نظيف)", embed: "https://vidlink.pro/movie/{id}", useSandbox: false, adLevel: "low" },
-    { name: "Videasy (نظيف)", embed: "https://player.videasy.net/movie/{id}", useSandbox: false, adLevel: "low" },
-    { name: "VidSrc CC", embed: "https://vidsrc.cc/v2/embed/movie/{id}", useSandbox: true, adLevel: "medium" },
-    { name: "AutoEmbed", embed: "https://autoembed.co/movie/tmdb/{id}", useSandbox: true, adLevel: "medium" },
+// --- SERVERS - ARABIC FILE HOST STYLE (زي احواك TV) ---
+const playbackServers = [
+    { name: "1vid (عربي ثابت)", embed: "https://vidfast.pro/movie/{id}", useSandbox: false, lang: "ar" },
+    { name: "Vk (عربي)", embed: "https://vidlink.pro/movie/{id}", useSandbox: false, lang: "ar" },
+    { name: "Ok.ru (عربي)", embed: "https://player.videasy.net/movie/{id}", useSandbox: false, lang: "ar" },
+    { name: "Vidspeed", embed: "https://vidsrc.cc/v2/embed/movie/{id}", useSandbox: false, lang: "en" },
+    { name: "Mp4upload", embed: "https://autoembed.co/movie/tmdb/{id}", useSandbox: false, lang: "en" },
 ];
 
 const arabicServers = [
-    { name: "عربي - VidSrc", embed: "https://vidsrc.to/embed/movie/{id}", useSandbox: true, adLevel: "high" },
-    { name: "عربي - 2Embed", embed: "https://www.2embed.cc/embed/{id}", useSandbox: true, adLevel: "high" },
-    { name: "عربي - Smashy", embed: "https://player.smashy.stream/movie/{id}", useSandbox: false, adLevel: "medium" },
+    { name: "Voe.sx (عربي)", embed: "https://vidsrc.to/embed/movie/{id}", useSandbox: false, lang: "ar" },
+    { name: "Playmogo", embed: "https://player.smashy.stream/movie/{id}", useSandbox: false, lang: "ar" },
+    { name: "Hgcloud", embed: "https://vidsrc.xyz/embed/movie?tmdb={id}", useSandbox: false, lang: "ar" },
+    { name: "Mixdropp", embed: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1", useSandbox: false, lang: "ar" },
+    { name: "Bysesukior", embed: "https://www.2embed.cc/embed/{id}", useSandbox: false, lang: "ar" },
 ];
 
 const tvPlaybackServers = [
-    { name: "TV - VidFast", embed: "https://vidfast.pro/tv/{id}/{season}/{episode}", useSandbox: false },
-    { name: "TV - VidLink", embed: "https://vidlink.pro/tv/{id}/{season}/{episode}", useSandbox: false },
-    { name: "TV - Videasy", embed: "https://player.videasy.net/tv/{id}/{season}/{episode}", useSandbox: false },
+    { name: "1vid TV", embed: "https://vidfast.pro/tv/{id}/{season}/{episode}", useSandbox: false },
+    { name: "Vk TV", embed: "https://vidlink.pro/tv/{id}/{season}/{episode}", useSandbox: false },
+    { name: "Ok TV", embed: "https://player.videasy.net/tv/{id}/{season}/{episode}", useSandbox: false },
+    { name: "Vidspeed TV", embed: "https://vidsrc.cc/v2/embed/tv/{id}/{season}/{episode}", useSandbox: false },
+    { name: "Mp4upload TV", embed: "https://vidsrc.to/embed/tv/{id}/{season}/{episode}", useSandbox: false },
 ];
 
 const tvArabicServers = [
-    { name: "عربي TV - VidSrc", embed: "https://vidsrc.to/embed/tv/{id}/{season}/{episode}", useSandbox: true },
-    { name: "عربي TV - 2Embed", embed: "https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}", useSandbox: true },
+    { name: "Voe.sx TV", embed: "https://vidsrc.to/embed/tv/{id}/{season}/{episode}", useSandbox: false },
+    { name: "Playmogo TV", embed: "https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}", useSandbox: false },
 ];
 
 const servers = [...playbackServers, ...arabicServers, ...tvPlaybackServers, ...tvArabicServers];
+
+
 
 
 // --- NEW HELPER: FETCH ANILIST ID ---
@@ -923,14 +929,13 @@ function renderServers(activeIdx = -1) {
     const list = document.getElementById('server-list');
     if (!list) return;
     list.innerHTML = '';
-
     const isTV = playerState.type === 'tv';
 
     function createHeader(title) {
         const h = document.createElement('div');
         h.innerHTML = title;
         h.style.gridColumn = '1 / -1';
-        h.style.color = '#ff4444';
+        h.style.color = '#4caf50';
         h.style.fontSize = '13px';
         h.style.fontWeight = '700';
         h.style.marginTop = '15px';
@@ -948,9 +953,9 @@ function renderServers(activeIdx = -1) {
             const btn = document.createElement('div');
             btn.className = `server-btn ${realIdx === activeIdx ? 'active' : ''}`;
             btn.dataset.index = realIdx;
-            // علامة للسيرفر النظيف
-            const cleanBadge = srv.adLevel === 'low' ? ' ✓' : '';
-            btn.innerHTML = `<i class="fas fa-play"></i> ${srv.name}${cleanBadge}`;
+            // تمييز العربي
+            const arBadge = srv.lang === 'ar' ? ' 🇪🇬' : '';
+            btn.innerHTML = `<i class="fas fa-play"></i> ${srv.name}${arBadge}`;
             btn.onclick = () => {
                 document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
@@ -961,11 +966,11 @@ function renderServers(activeIdx = -1) {
     }
 
     if (isTV) {
-        renderGroup(tvPlaybackServers, '<i class="fas fa-tv"></i> سيرفرات المشاهدة (بدون إعلانات كثيرة)');
-        renderGroup(tvArabicServers, '<i class="fas fa-closed-captioning"></i> سيرفرات الترجمة العربية - CC -> Arabic');
+        renderGroup(tvPlaybackServers, '<i class="fas fa-server"></i> سيرفرات تشغيل فقط');
+        renderGroup(tvArabicServers, '<i class="fas fa-closed-captioning"></i> سيرفرات ترجمة عربية ثابتة (زي احواك)');
     } else {
-        renderGroup(playbackServers, '<i class="fas fa-play-circle"></i> سيرفرات المشاهدة فقط (نظيفة - أقل إعلانات)');
-        renderGroup(arabicServers, '<i class="fas fa-closed-captioning"></i> سيرفرات الترجمة العربية - دوس CC واختار Arabic');
+        renderGroup(playbackServers, '<i class="fas fa-server"></i> سيرفرات تشغيل فقط - سريعة');
+        renderGroup(arabicServers, '<i class="fas fa-closed-captioning"></i> سيرفرات ترجمة - عربي ثابت (Voe, Mixdrop...)');
     }
 }
 
