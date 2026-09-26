@@ -28,9 +28,8 @@ async function prefetchEndpoint(endpoint) {
 const activeScrollHandlers = {};
 
 
-// --- SERVERS (FIXED - DIRECT + ARABIC SUPPORT) ---
+// --- SERVERS (FIXED - DIRECT + ARABIC) ---
 const servers = [
-    // --- MOVIE/TV - مباشر بترجمة عربية (CC -> Arabic) ---
     { name: "عربي - VidSrc", key: "vidsrc_ar", embed: "https://vidsrc.to/embed/movie/{id}", useSandbox: false },
     { name: "عربي - VidLink", key: "vidlink", embed: "https://vidlink.pro/movie/{id}", useSandbox: false },
     { name: "عربي - AutoEmbed", key: "auto", embed: "https://autoembed.co/movie/tmdb/{id}", useSandbox: false },
@@ -38,15 +37,9 @@ const servers = [
     { name: "2Embed", key: "2embed", embed: "https://www.2embed.cc/embed/{id}", useSandbox: false },
     { name: "SuperEmbed", key: "super", embed: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1", useSandbox: false },
     { name: "Smashy", key: "smashy", embed: "https://player.smashy.stream/movie/{id}", useSandbox: false },
-
-    // TV
     { name: "عربي TV - VidSrc", key: "vidsrc_tv", embed: "https://vidsrc.to/embed/tv/{id}/{season}/{episode}", useSandbox: false },
     { name: "عربي TV - VidLink", key: "vidlink_tv", embed: "https://vidlink.pro/tv/{id}/{season}/{episode}", useSandbox: false },
     { name: "TV - 2Embed", key: "2embed_tv", embed: "https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}", useSandbox: false },
-
-    // ANIME - مباشر (Anilist ID)
-    { name: "Anime - VidLink Sub", isAnime: true, key: "vidlink_anime_sub", embed: "https://vidlink.pro/anime/{id}/{season}/{episode}/sub", useSandbox: false },
-    { name: "Anime - VidLink Dub", isAnime: true, key: "vidlink_anime_dub", embed: "https://vidlink.pro/anime/{id}/{season}/{episode}/dub", useSandbox: false },
 ];
 
 // --- NEW HELPER: FETCH ANILIST ID ---
@@ -1000,86 +993,23 @@ function renderServers(activeIdx = -1) {
 
 async function loadVideo(serverIdx) {
     const iframeBox = document.getElementById('iframe-box');
-
-    // Safety check for player state
     if (!playerState) playerState = { season: 1, episode: 1 };
-
-    // 1. Show a professional Loading Screen while we fetch the secure token
-    iframeBox.innerHTML = `
-        <div style="display:flex; height:100%; width:100%; align-items:center; justify-content:center; flex-direction:column; color:#fff; background:#000;">
-            <i class="fas fa-circle-notch fa-spin" style="font-size:40px; margin-bottom:15px; color:var(--accent);"></i>
-            <div style="font-family:sans-serif; font-size:14px; opacity:0.8;">Securing Connection...</div>
-        </div>
-    `;
-
-    // Save to history
+    iframeBox.innerHTML = `<div style="display:flex; height:100%; width:100%; align-items:center; justify-content:center; flex-direction:column; color:#fff; background:#000;"><i class="fas fa-circle-notch fa-spin" style="font-size:40px; margin-bottom:15px; color:var(--accent);"></i><div style="font-family:sans-serif; font-size:14px; opacity:0.8;">Loading Stream - CC للترجمة العربية</div></div>`;
     updateHistory(serverIdx);
-
     const srv = servers[serverIdx];
-    // Ensure we have a valid server object
-    if (!srv) {
-        iframeBox.innerHTML = '<div style="color:red; padding:20px;">Error: Server not found.</div>';
-        return;
-    }
-
-    // 2. Determine the correct ID to send (Anilist for Anime, TMDB for others)
-    // The worker needs the specific ID type based on the server
-    let targetId = playerState.id; // Default to TMDB ID
-
-    if (srv.isAnime) {
-        if (playerState.anilistId) {
-            targetId = playerState.anilistId;
-        } else {
-            // If we are trying to play Anime but don't have an AniList ID yet, stop.
-            iframeBox.innerHTML = '<div style="text-align:center; padding:20px; color:#ff4444;">Error: Anime ID missing. Please refresh the page.</div>';
-            return;
-        }
-    }
-
+    if (!srv) { iframeBox.innerHTML = '<div style="color:red; padding:20px;">Error: Server not found.</div>'; return; }
     try {
-        // 3. CALL YOUR WORKER TO GET A TOKEN
-        // We assume you added 'const WORKER_URL' at the top of your file
-        const tokenUrl = `${WORKER_URL}/token?server=${srv.key}&id=${targetId}`;
-        const response = await fetch(tokenUrl);
-
-        if (!response.ok) throw new Error("Failed to generate security token");
-
-        const data = await response.json();
-        if (!data.token) throw new Error("Invalid token received");
-
-        // 4. CONSTRUCT THE SECURE PLAY URL
-        // This URL points to your Worker, which verifies the token and redirects to the video
-        const playUrl = new URL(`${WORKER_URL}/play`);
-        playUrl.searchParams.set('server', srv.key);
-        playUrl.searchParams.set('id', targetId);
-        playUrl.searchParams.set('token', data.token);
-
-        // Pass extra details needed for the stream
-        if (playerState.type) playUrl.searchParams.set('type', playerState.type);
-        if (playerState.season) playUrl.searchParams.set('season', playerState.season);
-        if (playerState.episode) playUrl.searchParams.set('episode', playerState.episode);
-
-        // Check if the current server supports sandboxing based on our array
-        let sandboxAttr = "";
-        if (srv.useSandbox === true) {
-            sandboxAttr = `sandbox="allow-scripts allow-same-origin allow-presentation"`;
-        }
-
-        // 5. LOAD THE IFRAME
-        // We use the Worker URL as the source. The browser will never see the real video source URL.
-        iframeBox.innerHTML = `<iframe src="${playUrl.toString()}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" ${sandboxAttr} style="width:100%; height:100%;"></iframe>`;
-
+        let targetId = srv.isAnime && playerState.anilistId ? playerState.anilistId : playerState.id;
+        let url = srv.embed.replace('{id}', targetId).replace('{season}', playerState.season || 1).replace('{episode}', playerState.episode || 1);
+        let sandboxAttr = srv.useSandbox ? `sandbox="allow-scripts allow-same-origin allow-presentation"` : "";
+        iframeBox.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" ${sandboxAttr} style="width:100%; height:100%;"></iframe>`;
     } catch (error) {
         console.error("Video Load Error:", error);
-        iframeBox.innerHTML = `
-            <div style="text-align:center; padding:20px; color:#ff4444; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
-                <i class="fas fa-exclamation-triangle" style="font-size:30px; margin-bottom:10px;"></i>
-                <div>Stream Error: ${error.message}</div>
-                <div style="font-size:12px; margin-top:5px; opacity:0.7;">Try selecting a different server.</div>
-            </div>
-        `;
+        iframeBox.innerHTML = `<div style="text-align:center; padding:20px; color:#ff4444;">Stream Error: ${error.message}<br><small>Try another server</small></div>`;
     }
 }
+
+
 
 // --- HELPERS ---
 function getLib(key) { return JSON.parse(localStorage.getItem('streamex_' + key)) || []; }
@@ -1265,7 +1195,7 @@ function toggleSidebar() {
     }
 }
 
-// ServiceWorker removed to prevent cached No content errors
+// ServiceWorker disabled - was causing cache issues
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
 }
