@@ -1,7 +1,6 @@
 // --- CONFIGURATION ---
-const API_KEY = 'af32459863d504e3a5d04f317e7f12e1';
+const WORKER_URL = 'https://streamex-server.snahasishdey141.workers.dev';
 const BASE_URL = 'https://api.themoviedb.org/3';
-const WORKER_URL = ''; // سيبه فاضي
 const IMG_URL = 'https://image.tmdb.org/t/p/w342';
 const IMG_ORIG = 'https://image.tmdb.org/t/p/original';
 
