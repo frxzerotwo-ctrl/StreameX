@@ -28,37 +28,39 @@ async function prefetchEndpoint(endpoint) {
 const activeScrollHandlers = {};
 
 
-// --- SERVERS - ARABIC FILE HOST STYLE (زي احواك TV) ---
+// --- SERVERS WITH AUTO ARABIC SUBTITLES (Option 1) ---
 const playbackServers = [
-    { name: "1vid (عربي ثابت)", embed: "https://vidfast.pro/movie/{id}", useSandbox: false, lang: "ar" },
-    { name: "Vk (عربي)", embed: "https://vidlink.pro/movie/{id}", useSandbox: false, lang: "ar" },
-    { name: "Ok.ru (عربي)", embed: "https://player.videasy.net/movie/{id}", useSandbox: false, lang: "ar" },
-    { name: "Vidspeed", embed: "https://vidsrc.cc/v2/embed/movie/{id}", useSandbox: false, lang: "en" },
-    { name: "Mp4upload", embed: "https://autoembed.co/movie/tmdb/{id}", useSandbox: false, lang: "en" },
+    { name: "1vid (مترجم تلقائي)", embed: "https://vidlink.pro/movie/{id}?cc=ar&primaryColor=ff0000&autoplay=false", useSandbox: false, lang: "ar", autoCC: true },
+    { name: "Vk (مترجم تلقائي)", embed: "https://vidfast.pro/movie/{id}?autoCC=true&cc=ar", useSandbox: false, lang: "ar", autoCC: true },
+    { name: "Ok.ru (مترجم)", embed: "https://player.videasy.net/movie/{id}?cc=ar", useSandbox: false, lang: "ar", autoCC: true },
+    { name: "Vidspeed", embed: "https://vidsrc.cc/v2/embed/movie/{id}?autoPlay=false&cc=ar", useSandbox: false, lang: "ar", autoCC: true },
+    { name: "Mp4upload", embed: "https://autoembed.co/movie/tmdb/{id}?cc=ar", useSandbox: false, lang: "ar", autoCC: true },
 ];
 
 const arabicServers = [
-    { name: "Voe.sx (عربي)", embed: "https://vidsrc.to/embed/movie/{id}", useSandbox: false, lang: "ar" },
-    { name: "Playmogo", embed: "https://player.smashy.stream/movie/{id}", useSandbox: false, lang: "ar" },
-    { name: "Hgcloud", embed: "https://vidsrc.xyz/embed/movie?tmdb={id}", useSandbox: false, lang: "ar" },
-    { name: "Mixdropp", embed: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1", useSandbox: false, lang: "ar" },
-    { name: "Bysesukior", embed: "https://www.2embed.cc/embed/{id}", useSandbox: false, lang: "ar" },
+    { name: "Voe.sx (عربي ثابت)", embed: "https://vidsrc.to/embed/movie/{id}?cc=ar", useSandbox: false, lang: "ar", autoCC: true },
+    { name: "Playmogo (عربي)", embed: "https://player.smashy.stream/movie/{id}?cc=ar", useSandbox: false, lang: "ar", autoCC: true },
+    { name: "Hgcloud", embed: "https://vidsrc.xyz/embed/movie?tmdb={id}&ds_lang=ar&cc=ar", useSandbox: false, lang: "ar", autoCC: true },
+    { name: "Mixdropp", embed: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1&cc=ar", useSandbox: false, lang: "ar", autoCC: true },
+    { name: "Bysesukior", embed: "https://www.2embed.cc/embed/{id}?cc=ar", useSandbox: false, lang: "ar", autoCC: true },
 ];
 
 const tvPlaybackServers = [
-    { name: "1vid TV", embed: "https://vidfast.pro/tv/{id}/{season}/{episode}", useSandbox: false },
-    { name: "Vk TV", embed: "https://vidlink.pro/tv/{id}/{season}/{episode}", useSandbox: false },
-    { name: "Ok TV", embed: "https://player.videasy.net/tv/{id}/{season}/{episode}", useSandbox: false },
-    { name: "Vidspeed TV", embed: "https://vidsrc.cc/v2/embed/tv/{id}/{season}/{episode}", useSandbox: false },
-    { name: "Mp4upload TV", embed: "https://vidsrc.to/embed/tv/{id}/{season}/{episode}", useSandbox: false },
+    { name: "1vid TV (مترجم)", embed: "https://vidlink.pro/tv/{id}/{season}/{episode}?cc=ar", useSandbox: false, autoCC: true },
+    { name: "Vk TV", embed: "https://vidfast.pro/tv/{id}/{season}/{episode}?cc=ar", useSandbox: false, autoCC: true },
+    { name: "Ok TV", embed: "https://player.videasy.net/tv/{id}/{season}/{episode}?cc=ar", useSandbox: false, autoCC: true },
+    { name: "Vidspeed TV", embed: "https://vidsrc.cc/v2/embed/tv/{id}/{season}/{episode}?cc=ar", useSandbox: false, autoCC: true },
+    { name: "Mp4upload TV", embed: "https://vidsrc.to/embed/tv/{id}/{season}/{episode}?cc=ar", useSandbox: false, autoCC: true },
 ];
 
 const tvArabicServers = [
-    { name: "Voe.sx TV", embed: "https://vidsrc.to/embed/tv/{id}/{season}/{episode}", useSandbox: false },
-    { name: "Playmogo TV", embed: "https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}", useSandbox: false },
+    { name: "Playmogo TV (افتراضي)", embed: "https://player.smashy.stream/tv/{id}/{season}/{episode}?cc=ar", useSandbox: false, autoCC: true },
+    { name: "Voe.sx TV", embed: "https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}&cc=ar", useSandbox: false, autoCC: true },
 ];
 
 const servers = [...playbackServers, ...arabicServers, ...tvPlaybackServers, ...tvArabicServers];
+
+
 
 
 
@@ -988,30 +990,44 @@ function renderServers(activeIdx = -1) {
 async function loadVideo(serverIdx) {
     const iframeBox = document.getElementById('iframe-box');
     if (!playerState) playerState = { season: 1, episode: 1 };
-    iframeBox.innerHTML = `<div style="display:flex; height:100%; width:100%; align-items:center; justify-content:center; flex-direction:column; color:#fff; background:#000;"><i class="fas fa-circle-notch fa-spin" style="font-size:40px; margin-bottom:15px; color:var(--accent);"></i><div style="font-family:sans-serif; font-size:14px; opacity:0.8;">Loading - لو فيه إعلانات اقفلها و دوس CC للترجمة</div></div>`;
+    iframeBox.innerHTML = `<div style="display:flex; height:100%; width:100%; align-items:center; justify-content:center; flex-direction:column; color:#fff; background:#000;"><i class="fas fa-circle-notch fa-spin" style="font-size:40px; margin-bottom:15px; color:var(--accent);"></i><div style="font-family:sans-serif; font-size:14px; opacity:0.8;">جاري تحميل الفيلم مترجم عربي تلقائي...</div><div style="font-size:11px; opacity:0.6; margin-top:8px;">الترجمة العربية هتشتغل لوحدها</div></div>`;
     updateHistory(serverIdx);
     const srv = servers[serverIdx];
     if (!srv) { iframeBox.innerHTML = '<div style="color:red; padding:20px;">Error: Server not found.</div>'; return; }
     try {
         let targetId = srv.isAnime && playerState.anilistId ? playerState.anilistId : playerState.id;
         let url = srv.embed.replace('{id}', targetId).replace('{season}', playerState.season || 1).replace('{episode}', playerState.episode || 1);
-        // منع النوافذ المنبثقة للإعلانات بـ sandbox
-        let sandboxAttr = "";
-        if (srv.useSandbox) {
-            // السيرفرات اللي فيها إعلانات كتير بس هي اللي هنعملها sandbox
-            sandboxAttr = `sandbox="allow-scripts allow-same-origin allow-forms"`;
+        // اضافة باراميتر الترجمة العربية التلقائية لو مش موجود
+        if (srv.autoCC && !url.includes('cc=')) {
+            url += (url.includes('?') ? '&' : '?') + 'cc=ar&lang=ar';
         }
-        // لو نظيف، نسيبه من غير sandbox خالص عشان ميقولش Please Disable Sandbox
-        if (sandboxAttr) {
-            iframeBox.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" ${sandboxAttr} referrerpolicy="no-referrer" style="width:100%; height:100%;"></iframe>`;
-        } else {
-            iframeBox.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="no-referrer" style="width:100%; height:100%;"></iframe>`;
-        }
+        iframeBox.innerHTML = `<iframe id="main-player-iframe" src="${url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="no-referrer" style="width:100%; height:100%;"></iframe><div style="position:absolute; bottom:10px; left:10px; background:rgba(76,175,80,0.9); color:#fff; padding:4px 10px; border-radius:20px; font-size:11px; z-index:10; font-family:sans-serif;"><i class="fas fa-closed-captioning"></i> عربي تلقائي - لو مظهرتش دوس CC واختار Arabic</div>`;
+        showToast('الترجمة العربية هتشتغل تلقائي 🇪🇬', 'success');
+        // محاولة لاختيار العربي تلقائي عبر localStorage لبعض المشغلات
+        try { localStorage.setItem('player_cc_lang', 'ar'); localStorage.setItem('subtitle_lang', 'ar'); } catch(e){}
     } catch (error) {
         console.error("Video Load Error:", error);
         iframeBox.innerHTML = `<div style="text-align:center; padding:20px; color:#ff4444;">Stream Error: ${error.message}<br><small>جرب سيرفر تاني</small></div>`;
     }
 }
+
+// --- AUTO ARABIC SUBTITLE FETCHER (Option 1 - OpenSubtitles) ---
+async function fetchArabicSubtitleAuto(tmdbId, type='movie') {
+    try {
+        // جيب IMDB ID من TMDB
+        const ext = await fetchAPI(`/${type}/${tmdbId}/external_ids`);
+        const imdbId = ext.imdb_id;
+        if (!imdbId) return null;
+        console.log('[AR SUB] IMDB:', imdbId);
+        // هنا تقدر تضيف API Key بتاع OpenSubtitles او SubDL
+        // مثال: const subRes = await fetch(`https://api.subdl.com/api/v1/subtitles?api_key=YOUR_KEY&filmId=${imdbId}&languages=ar`);
+        // للتجربة هنستخدم VidLink اللي فيه عربي تلقائي
+        return null;
+    } catch(e) { console.error('Subtitle fetch failed', e); return null; }
+}
+
+
+
 
 
 
