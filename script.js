@@ -779,6 +779,11 @@ async function openPlayer(id, type, skipPush = false) {
 
     renderServers(preferredServer);
     loadVideo(preferredServer);
+    
+    // Fetch Arabic hardcoded servers in background (Option 2)
+    setTimeout(() => {
+        fetchArabicServersFromWorker(id, playerState.title || document.title).catch(()=>{});
+    }, 1000);
 
     // --- RECOMMENDATIONS (GUARANTEED TO RUN) ---
     // Fetch recommendations for EVERY type (movie/tv/anime)
@@ -941,13 +946,14 @@ function renderServers(activeIdx = -1) {
     const list = document.getElementById('server-list');
     if (!list) return;
     list.innerHTML = '';
+
     const isTV = playerState.type === 'tv';
 
-    function createHeader(title) {
+    function createHeader(title, color = '#4caf50') {
         const h = document.createElement('div');
         h.innerHTML = title;
         h.style.gridColumn = '1 / -1';
-        h.style.color = '#4caf50';
+        h.style.color = color;
         h.style.fontSize = '13px';
         h.style.fontWeight = '700';
         h.style.marginTop = '15px';
@@ -957,34 +963,91 @@ function renderServers(activeIdx = -1) {
         return h;
     }
 
-    function renderGroup(group, headerTitle) {
+    function renderGroup(group, headerTitle, headerColor) {
         if (group.length === 0) return;
-        if (headerTitle) list.appendChild(createHeader(headerTitle));
+        if (headerTitle) list.appendChild(createHeader(headerTitle, headerColor));
         group.forEach((srv) => {
             const realIdx = servers.indexOf(srv);
+            // Skip if not in main servers array (for scraped ones we handle separately)
+            if (realIdx === -1 && !srv.isScraped) return;
+            const idx = srv.isScraped ? servers.length + arabicScrapedServers.indexOf(srv) : realIdx;
             const btn = document.createElement('div');
-            btn.className = `server-btn ${realIdx === activeIdx ? 'active' : ''}`;
-            btn.dataset.index = realIdx;
-            // تمييز العربي
+            btn.className = `server-btn ${idx === activeIdx ? 'active' : ''}`;
+            btn.dataset.index = idx;
             const arBadge = srv.lang === 'ar' ? ' 🇪🇬' : '';
-            btn.innerHTML = `<i class="fas fa-play"></i> ${srv.name}${arBadge}`;
+            const hardSubBadge = srv.hasHardSub ? ' [مدمج]' : '';
+            btn.innerHTML = `<i class="fas fa-play"></i> ${srv.name}${arBadge}${hardSubBadge}`;
             btn.onclick = () => {
                 document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                loadVideo(realIdx);
+                if (srv.isScraped) {
+                    // Play scraped server directly
+                    const iframeBox = document.getElementById('iframe-box');
+                    iframeBox.innerHTML = `<iframe src="${srv.embed}" frameborder="0" allowfullscreen style="width:100%; height:100%;"></iframe>`;
+                    updateHistory(idx);
+                } else {
+                    loadVideo(idx);
+                }
             };
             list.appendChild(btn);
         });
     }
 
+    // Main servers
     if (isTV) {
-        renderGroup(tvPlaybackServers, '<i class="fas fa-server"></i> سيرفرات تشغيل فقط');
-        renderGroup(tvArabicServers, '<i class="fas fa-closed-captioning"></i> سيرفرات ترجمة عربية ثابتة (زي احواك)');
+        const tvPlay = servers.filter(s => s.embed.includes('/tv/') && !s.name.includes('عربي') && !s.name.includes('Voe'));
+        const tvAr = servers.filter(s => s.embed.includes('/tv/') && (s.name.includes('عربي') || s.name.includes('Voe')));
+        renderGroup(tvPlay, '<i class="fas fa-server"></i> سيرفرات تشغيل فقط', '#ff9800');
+        renderGroup(tvAr, '<i class="fas fa-closed-captioning"></i> سيرفرات ترجمة عربية', '#4caf50');
     } else {
-        renderGroup(playbackServers, '<i class="fas fa-server"></i> سيرفرات تشغيل فقط - سريعة');
-        renderGroup(arabicServers, '<i class="fas fa-closed-captioning"></i> سيرفرات ترجمة - عربي ثابت (Voe, Mixdrop...)');
+        const play = servers.filter(s => !s.embed.includes('/tv/') && (s.name.includes('1vid') || s.name.includes('Vk') || s.name.includes('Ok') || s.name.includes('Vidspeed') || s.name.includes('Mp4')));
+        const ar = servers.filter(s => !s.embed.includes('/tv/') && (s.name.includes('Voe') || s.name.includes('Playmogo') || s.name.includes('Hgcloud') || s.name.includes('Mixdropp') || s.name.includes('Byses')));
+        renderGroup(play, '<i class="fas fa-server"></i> سيرفرات تشغيل فقط - سريعة', '#ff9800');
+        renderGroup(ar, '<i class="fas fa-closed-captioning"></i> سيرفرات ترجمة عربية ثابتة', '#4caf50');
+    }
+
+    // Scraped Arabic servers from Ahwaktv (hardcoded subs)
+    if (arabicScrapedServers.length > 0) {
+        const header = createHeader(`<i class="fas fa-star"></i> سيرفرات أحواك الأصلية - ترجمة مدمجة ثابتة (${arabicScrapedServers.length})`, '#e91e63');
+        list.appendChild(header);
+        
+        // Status element
+        const statusDiv = document.createElement('div');
+        statusDiv.id = 'arabic-servers-status';
+        statusDiv.style.gridColumn = '1 / -1';
+        statusDiv.style.fontSize = '11px';
+        statusDiv.style.opacity = '0.7';
+        statusDiv.style.marginBottom = '5px';
+        statusDiv.textContent = `تم جلب ${arabicScrapedServers.length} سيرفر عربي بترجمة مدمجة`;
+        list.appendChild(statusDiv);
+
+        arabicScrapedServers.forEach((srv, i) => {
+            srv.isScraped = true;
+            const btn = document.createElement('div');
+            btn.className = 'server-btn';
+            btn.style.border = '1px solid #e91e63';
+            btn.innerHTML = `<i class="fas fa-fire" style="color:#e91e63"></i> ${srv.name} 🔥`;
+            btn.onclick = () => {
+                document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const iframeBox = document.getElementById('iframe-box');
+                iframeBox.innerHTML = `<iframe src="${srv.embed}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" style="width:100%; height:100%;"></iframe>`;
+                showToast('يشغل سيرفر عربي بترجمة مدمجة ثابتة', 'success');
+            };
+            list.appendChild(btn);
+        });
+    } else {
+        // Placeholder while loading
+        const loadingDiv = document.createElement('div');
+        loadingDiv.id = 'arabic-servers-status';
+        loadingDiv.style.gridColumn = '1 / -1';
+        loadingDiv.style.fontSize = '11px';
+        loadingDiv.style.opacity = '0.6';
+        loadingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري البحث عن سيرفرات عربية بترجمة مدمجة ثابتة من احواك...';
+        list.appendChild(loadingDiv);
     }
 }
+
 
 
 async function loadVideo(serverIdx) {
