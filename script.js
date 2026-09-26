@@ -28,19 +28,34 @@ async function prefetchEndpoint(endpoint) {
 const activeScrollHandlers = {};
 
 
-// --- SERVERS (FIXED - DIRECT + ARABIC) ---
-const servers = [
-    { name: "عربي - VidSrc", key: "vidsrc_ar", embed: "https://vidsrc.to/embed/movie/{id}", useSandbox: false },
-    { name: "عربي - VidLink", key: "vidlink", embed: "https://vidlink.pro/movie/{id}", useSandbox: false },
-    { name: "عربي - AutoEmbed", key: "auto", embed: "https://autoembed.co/movie/tmdb/{id}", useSandbox: false },
-    { name: "VidSrc 2", key: "vidsrc2", embed: "https://vidsrc.xyz/embed/movie?tmdb={id}", useSandbox: false },
-    { name: "2Embed", key: "2embed", embed: "https://www.2embed.cc/embed/{id}", useSandbox: false },
-    { name: "SuperEmbed", key: "super", embed: "https://multiembed.mov/directstream.php?video_id={id}&tmdb=1", useSandbox: false },
-    { name: "Smashy", key: "smashy", embed: "https://player.smashy.stream/movie/{id}", useSandbox: false },
-    { name: "عربي TV - VidSrc", key: "vidsrc_tv", embed: "https://vidsrc.to/embed/tv/{id}/{season}/{episode}", useSandbox: false },
-    { name: "عربي TV - VidLink", key: "vidlink_tv", embed: "https://vidlink.pro/tv/{id}/{season}/{episode}", useSandbox: false },
-    { name: "TV - 2Embed", key: "2embed_tv", embed: "https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}", useSandbox: false },
+// --- SERVERS (FIXED - CLEAN + ARABIC SPLIT) ---
+const playbackServers = [
+    { name: "VidFast (نظيف)", embed: "https://vidfast.pro/movie/{id}", useSandbox: false, adLevel: "low" },
+    { name: "VidLink (نظيف)", embed: "https://vidlink.pro/movie/{id}", useSandbox: false, adLevel: "low" },
+    { name: "Videasy (نظيف)", embed: "https://player.videasy.net/movie/{id}", useSandbox: false, adLevel: "low" },
+    { name: "VidSrc CC", embed: "https://vidsrc.cc/v2/embed/movie/{id}", useSandbox: true, adLevel: "medium" },
+    { name: "AutoEmbed", embed: "https://autoembed.co/movie/tmdb/{id}", useSandbox: true, adLevel: "medium" },
 ];
+
+const arabicServers = [
+    { name: "عربي - VidSrc", embed: "https://vidsrc.to/embed/movie/{id}", useSandbox: true, adLevel: "high" },
+    { name: "عربي - 2Embed", embed: "https://www.2embed.cc/embed/{id}", useSandbox: true, adLevel: "high" },
+    { name: "عربي - Smashy", embed: "https://player.smashy.stream/movie/{id}", useSandbox: false, adLevel: "medium" },
+];
+
+const tvPlaybackServers = [
+    { name: "TV - VidFast", embed: "https://vidfast.pro/tv/{id}/{season}/{episode}", useSandbox: false },
+    { name: "TV - VidLink", embed: "https://vidlink.pro/tv/{id}/{season}/{episode}", useSandbox: false },
+    { name: "TV - Videasy", embed: "https://player.videasy.net/tv/{id}/{season}/{episode}", useSandbox: false },
+];
+
+const tvArabicServers = [
+    { name: "عربي TV - VidSrc", embed: "https://vidsrc.to/embed/tv/{id}/{season}/{episode}", useSandbox: true },
+    { name: "عربي TV - 2Embed", embed: "https://www.2embed.cc/embedtv/{id}&s={season}&e={episode}", useSandbox: true },
+];
+
+const servers = [...playbackServers, ...arabicServers, ...tvPlaybackServers, ...tvArabicServers];
+
 
 // --- NEW HELPER: FETCH ANILIST ID ---
 async function fetchAnilistId(title, season = 1) {
@@ -909,105 +924,77 @@ function renderServers(activeIdx = -1) {
     if (!list) return;
     list.innerHTML = '';
 
-    let primaryServers = [];
-    let fallbackServers = [];
-    let firstVisibleIndex = -1;
+    const isTV = playerState.type === 'tv';
 
-    // 1. Group the servers based on what is currently playing
-    servers.forEach((srv, idx) => {
-        if (!playerState.isAnime) {
-            // If watching Movie/TV: Only load non-anime servers
-            if (!srv.isAnime) primaryServers.push({ srv, idx });
-        } else {
-            // If watching Anime: Separate Anime servers and Fallback Movie servers
-            if (srv.isAnime) {
-                primaryServers.push({ srv, idx });
-            } else {
-                fallbackServers.push({ srv, idx });
-            }
-        }
-    });
-
-    // 2. Determine the default active server (First primary, or first fallback)
-    if (primaryServers.length > 0) {
-        firstVisibleIndex = primaryServers[0].idx;
-    } else if (fallbackServers.length > 0) {
-        firstVisibleIndex = fallbackServers[0].idx;
+    function createHeader(title) {
+        const h = document.createElement('div');
+        h.innerHTML = title;
+        h.style.gridColumn = '1 / -1';
+        h.style.color = '#ff4444';
+        h.style.fontSize = '13px';
+        h.style.fontWeight = '700';
+        h.style.marginTop = '15px';
+        h.style.marginBottom = '5px';
+        h.style.borderBottom = '1px solid #333';
+        h.style.paddingBottom = '5px';
+        return h;
     }
 
-    // Helper function to render a block of servers
-    function renderServerBlock(group, titleText) {
+    function renderGroup(group, headerTitle) {
         if (group.length === 0) return;
-
-        // If a title is provided (for Anime mode), create a full-width header
-        if (titleText) {
-            const title = document.createElement('div');
-            title.innerHTML = titleText;
-            // CSS to make it span all 3 columns and look like a mini-header
-            title.style.gridColumn = '1 / -1';
-            title.style.color = 'var(--text-muted)';
-            title.style.fontSize = '12px';
-            title.style.fontWeight = '600';
-            title.style.textTransform = 'uppercase';
-            title.style.marginTop = '10px';
-            title.style.marginBottom = '5px';
-            title.style.borderBottom = '1px solid var(--border-color)';
-            title.style.paddingBottom = '5px';
-            list.appendChild(title);
-        }
-
-        // Render the actual buttons
-        group.forEach(item => {
-            const { srv, idx } = item;
+        if (headerTitle) list.appendChild(createHeader(headerTitle));
+        group.forEach((srv) => {
+            const realIdx = servers.indexOf(srv);
             const btn = document.createElement('div');
-            const isActive = (activeIdx !== -1) ? (idx === activeIdx) : (idx === firstVisibleIndex);
-
-            btn.className = `server-btn ${isActive ? 'active' : ''}`;
-            btn.dataset.index = idx; // Saves the true backend index to the HTML
-            btn.innerHTML = `<i class="fas fa-play"></i> ${srv.name}`;
-
+            btn.className = `server-btn ${realIdx === activeIdx ? 'active' : ''}`;
+            btn.dataset.index = realIdx;
+            // علامة للسيرفر النظيف
+            const cleanBadge = srv.adLevel === 'low' ? ' ✓' : '';
+            btn.innerHTML = `<i class="fas fa-play"></i> ${srv.name}${cleanBadge}`;
             btn.onclick = () => {
                 document.querySelectorAll('.server-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                loadVideo(idx);
-            }
+                loadVideo(realIdx);
+            };
             list.appendChild(btn);
         });
     }
 
-    // 3. Render the blocks to the screen
-    if (!playerState.isAnime) {
-        // Just render regular servers normally without extra labels
-        renderServerBlock(primaryServers, null);
+    if (isTV) {
+        renderGroup(tvPlaybackServers, '<i class="fas fa-tv"></i> سيرفرات المشاهدة (بدون إعلانات كثيرة)');
+        renderGroup(tvArabicServers, '<i class="fas fa-closed-captioning"></i> سيرفرات الترجمة العربية - CC -> Arabic');
     } else {
-        // Render two distinct blocks with labels for Anime
-        renderServerBlock(primaryServers, '<i class="fas fa-dragon"></i> Dedicated Anime Servers');
-        renderServerBlock(fallbackServers, '<i class="fas fa-film"></i> Fallback Movie Servers');
-    }
-
-    // 4. Fallback if absolutely no servers match
-    if (primaryServers.length === 0 && fallbackServers.length === 0) {
-        list.innerHTML = '<div style="color:#fff; padding:10px; grid-column: 1 / -1;">No compatible servers found.</div>';
+        renderGroup(playbackServers, '<i class="fas fa-play-circle"></i> سيرفرات المشاهدة فقط (نظيفة - أقل إعلانات)');
+        renderGroup(arabicServers, '<i class="fas fa-closed-captioning"></i> سيرفرات الترجمة العربية - دوس CC واختار Arabic');
     }
 }
+
 
 async function loadVideo(serverIdx) {
     const iframeBox = document.getElementById('iframe-box');
     if (!playerState) playerState = { season: 1, episode: 1 };
-    iframeBox.innerHTML = `<div style="display:flex; height:100%; width:100%; align-items:center; justify-content:center; flex-direction:column; color:#fff; background:#000;"><i class="fas fa-circle-notch fa-spin" style="font-size:40px; margin-bottom:15px; color:var(--accent);"></i><div style="font-family:sans-serif; font-size:14px; opacity:0.8;">Loading Stream - CC للترجمة العربية</div></div>`;
+    iframeBox.innerHTML = `<div style="display:flex; height:100%; width:100%; align-items:center; justify-content:center; flex-direction:column; color:#fff; background:#000;"><i class="fas fa-circle-notch fa-spin" style="font-size:40px; margin-bottom:15px; color:var(--accent);"></i><div style="font-family:sans-serif; font-size:14px; opacity:0.8;">Loading - لو فيه إعلانات اقفلها و دوس CC للترجمة</div></div>`;
     updateHistory(serverIdx);
     const srv = servers[serverIdx];
     if (!srv) { iframeBox.innerHTML = '<div style="color:red; padding:20px;">Error: Server not found.</div>'; return; }
     try {
         let targetId = srv.isAnime && playerState.anilistId ? playerState.anilistId : playerState.id;
         let url = srv.embed.replace('{id}', targetId).replace('{season}', playerState.season || 1).replace('{episode}', playerState.episode || 1);
-        let sandboxAttr = srv.useSandbox ? `sandbox="allow-scripts allow-same-origin allow-presentation"` : "";
-        iframeBox.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media" ${sandboxAttr} style="width:100%; height:100%;"></iframe>`;
+        // منع النوافذ المنبثقة للإعلانات بـ sandbox
+        let sandboxAttr = "";
+        if (srv.useSandbox) {
+            sandboxAttr = `sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"`;
+        } else {
+            sandboxAttr = `sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups"`;
+        }
+        // إضافة referrer policy لتقليل التتبع
+        iframeBox.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" ${sandboxAttr} referrerpolicy="no-referrer" style="width:100%; height:100%;"></iframe>`;
     } catch (error) {
         console.error("Video Load Error:", error);
-        iframeBox.innerHTML = `<div style="text-align:center; padding:20px; color:#ff4444;">Stream Error: ${error.message}<br><small>Try another server</small></div>`;
+        iframeBox.innerHTML = `<div style="text-align:center; padding:20px; color:#ff4444;">Stream Error: ${error.message}<br><small>جرب سيرفر تاني</small></div>`;
     }
 }
+
 
 
 
