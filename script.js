@@ -29,7 +29,7 @@ const activeScrollHandlers = {};
 
 
 // --- SERVERS (FIXED - CLEAN + ARABIC SPLIT) ---
-const playbackServers = [
+const playbackServers = [ // نظيفة بدون sandbox - مش هتقول Please Disable Sandbox
     { name: "VidFast (نظيف)", embed: "https://vidfast.pro/movie/{id}", useSandbox: false, adLevel: "low" },
     { name: "VidLink (نظيف)", embed: "https://vidlink.pro/movie/{id}", useSandbox: false, adLevel: "low" },
     { name: "Videasy (نظيف)", embed: "https://player.videasy.net/movie/{id}", useSandbox: false, adLevel: "low" },
@@ -983,12 +983,15 @@ async function loadVideo(serverIdx) {
         // منع النوافذ المنبثقة للإعلانات بـ sandbox
         let sandboxAttr = "";
         if (srv.useSandbox) {
-            sandboxAttr = `sandbox="allow-scripts allow-same-origin allow-forms allow-presentation"`;
-        } else {
-            sandboxAttr = `sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups"`;
+            // السيرفرات اللي فيها إعلانات كتير بس هي اللي هنعملها sandbox
+            sandboxAttr = `sandbox="allow-scripts allow-same-origin allow-forms"`;
         }
-        // إضافة referrer policy لتقليل التتبع
-        iframeBox.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" ${sandboxAttr} referrerpolicy="no-referrer" style="width:100%; height:100%;"></iframe>`;
+        // لو نظيف، نسيبه من غير sandbox خالص عشان ميقولش Please Disable Sandbox
+        if (sandboxAttr) {
+            iframeBox.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" ${sandboxAttr} referrerpolicy="no-referrer" style="width:100%; height:100%;"></iframe>`;
+        } else {
+            iframeBox.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="no-referrer" style="width:100%; height:100%;"></iframe>`;
+        }
     } catch (error) {
         console.error("Video Load Error:", error);
         iframeBox.innerHTML = `<div style="text-align:center; padding:20px; color:#ff4444;">Stream Error: ${error.message}<br><small>جرب سيرفر تاني</small></div>`;
