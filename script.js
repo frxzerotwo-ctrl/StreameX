@@ -315,8 +315,8 @@ async function fetchAPI(endpoint) {
 
     // 3. If not cached, fetch from your Cloudflare Worker
     const res = await fetch(
-        `https://streamex-proxy.snahasishdey141.workers.dev/?endpoint=${encodeURIComponent(endpoint)}`
-    );
+  `${WORKER_URL}/?endpoint=${encodeURIComponent(endpoint)}`
+);
     const data = await res.json();
 
     // 4. Save the result so we don't hit the worker again this session
